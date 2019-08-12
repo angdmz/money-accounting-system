@@ -4,36 +4,36 @@ import (
 	. "encoding/json"
 	"github.com/gorilla/mux"
 	"log"
+	txs "money-accounting-system/transactions"
 	"net/http"
 	"strconv"
 )
 
-type User struct {
-	Id      int    `json:"id"`
-	Name    string `json:"name,omitempty"`
-	SurName string `json:"surname,omitempty"`
-	Age     byte   `json:"age,omitempty"`
-}
+var Users map[int]txs.TransactionDTO
+var Service = txs.NewTransactionService()
 
-var Users map[int]User
-
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user User
-	err := NewDecoder(r.Body).Decode(&user)
+func Transact(w http.ResponseWriter, r *http.Request) {
+	var tx txs.TransactionDTO
+	err := NewDecoder(r.Body).Decode(&tx)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	if _, ok := Users[user.Id]; ok {
-		http.Error(w, "Already exists an user with the same id", http.StatusConflict)
+
+	t, err := txs.ProcessTransactionType(tx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusPreconditionFailed)
 		return
-	} else {
-		Users[user.Id] = user
 	}
-	log.Println("User: ", user, "added")
+	if id, err := Service.Transact(t); err != nil {
+		http.Error(w, "Already exists an tx with the same id", http.StatusConflict)
+	} else {
+		NewEncoder(w).Encode(id)
+	}
+	log.Println("TransactionDTO: ", id, "added")
 }
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	userList := make([]User, 0)
+	userList := make([]txs.TransactionDTO, 0)
 	for _, value := range Users {
 		userList = append(userList, value)
 	}
@@ -59,17 +59,17 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if user, ok := Users[id]; ok {
 		delete(Users, id)
-		log.Println("User: ", user, "removed")
+		log.Println("TransactionDTO: ", user, "removed")
 	} else {
 		http.Error(w, "Not Found", http.StatusNotFound)
 	}
 }
 
 func main() {
-	Users = make(map[int]User)
+	Users = make(map[int]txs.TransactionDTO)
 	log.Println("Default users: ", Users)
 	router := mux.NewRouter()
-	router.HandleFunc("/transactions", CreateUser).Methods("POST")
+	router.HandleFunc("/transactions", Transact).Methods("POST")
 	router.HandleFunc("/transactions", GetUsers).Methods("GET")
 	router.HandleFunc("/transactions/{id}", GetUser).Methods("GET")
 	log.Println("Listening on http://localhost:8080")
