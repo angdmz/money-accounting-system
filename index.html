@@ -1,0 +1,34 @@
+
+<html lang="">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <title>Our admins and users</title>
+</head>
+{# This is a short example to give you a quick overview of pongo2's syntax. #}
+
+{% macro tx_detail(tx) %}
+<div class="user_item">
+    <li>
+        <span class="">{tracking.tracking_id}</span> |  {tracking.block_number}
+    </li>
+    <!-- Will print a human-readable time duration like "3 weeks ago" -->
+    <p>This user registered {{ user.register_date|naturaltime }}.</p>
+</div>
+{% endmacro %}
+
+
+<body>
+<!-- Make use of the macro defined above to avoid repetitive HTML code
+     since we want to use the same code for admins AND members -->
+
+<h1>Transactions</h1>
+<ul>
+    {% for user in userlist %}
+    {{ user_details(user) }}
+    {% endfor %}
+</ul>
+</body>
+</html>
