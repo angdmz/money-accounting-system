@@ -18,7 +18,7 @@
 {# This is a short example to give you a quick overview of pongo2's syntax. #}
 
 {% macro tx_detail(tx) %}
-<tr onclick="show('{{tx.Id}}','{{tx.Type}}','{{tx.Amount}}','{{tx.EmissionDate}}')">
+<tr {% if (tx.Type == 'debit') %} class="bg-warning"{% else %} class="bg-success" {% endif %}  onclick="show('{{tx.Id}}','{{tx.Type}}','{{tx.Amount}}','{{tx.EmissionDate}}')">
     <td>{{tx.Type}} </td>
     <td>{{tx.Amount}}</td>
     <td>
