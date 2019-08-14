@@ -1,6 +1,7 @@
 package main
 
 import (
+	txs "./transactions"
 	"container/list"
 	. "encoding/json"
 	"errors"
@@ -8,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	skiplist "github.com/sean-public/fast-skiplist"
 	"log"
-	txs "money-accounting-system/transactions"
 	"net/http"
 	"strconv"
 	"sync"
@@ -44,7 +44,7 @@ func debit(balance *uint64, amount uint64) error {
 
 func Transact(w http.ResponseWriter, r *http.Request) {
 	var tx txs.TransactionDTO
-
+	w.Header().Set("Content-type", "application/json")
 	err := NewDecoder(r.Body).Decode(&tx)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -72,17 +72,27 @@ func Transact(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(e), http.StatusBadRequest)
 	}
 }
-func GetTransactions(w http.ResponseWriter, r *http.Request) {
-	txlist := make([]interface{}, 0)
-	for e := IdList.Front(); e != nil; e = e.Next() {
-		txlist = append(txlist, e.Value)
+
+func ListToSlice(l *list.List) *[]interface{} {
+	res := make([]interface{}, l.Len())
+	i := 0
+	for e := l.Front(); e != nil; e = e.Next() {
+		res[i] = e.Value
+		i++
 	}
+	return &res
+}
+
+func GetTransactions(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "application/json")
+	txlist := ListToSlice(IdList)
 	err := NewEncoder(w).Encode(txlist)
 	if err != nil {
 		log.Println("Could not encode")
 	}
 }
 func GetTransaction(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "application/json")
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -98,7 +108,8 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 
 func Templating(w http.ResponseWriter, r *http.Request) {
 	// Execute the template per HTTP request
-	err := Tpl.ExecuteWriter(pongo2.Context{"query": r.FormValue("query")}, w)
+	txlist := ListToSlice(IdList)
+	err := Tpl.ExecuteWriter(pongo2.Context{"txlist": txlist, "balance": Balance}, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

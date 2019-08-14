@@ -6,29 +6,87 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <title>Our admins and users</title>
+    <script>
+        function show(id, type, amount, date) {
+            $('#date_span').html(date);
+            $('#id_span').html(id);
+            $('#amount_span').html(amount);
+            $('#type_span').html(type);
+        }
+    </script>
 </head>
 {# This is a short example to give you a quick overview of pongo2's syntax. #}
 
 {% macro tx_detail(tx) %}
-<div class="user_item">
-    <li>
-        <span class="">{tracking.tracking_id}</span> |  {tracking.block_number}
-    </li>
-    <!-- Will print a human-readable time duration like "3 weeks ago" -->
-    <p>This user registered {{ user.register_date|naturaltime }}.</p>
-</div>
+<tr onclick="show('{{tx.Id}}','{{tx.Type}}','{{tx.Amount}}','{{tx.EmissionDate}}')">
+    <td>{{tx.Type}} </td>
+    <td>{{tx.Amount}}</td>
+    <td>
+        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#tx_modal">Details</button>
+    </td>
+</tr>
+
 {% endmacro %}
 
 
 <body>
-<!-- Make use of the macro defined above to avoid repetitive HTML code
-     since we want to use the same code for admins AND members -->
+<h1>Balance: {{ balance }}</h1>
 
 <h1>Transactions</h1>
-<ul>
-    {% for user in userlist %}
-    {{ user_details(user) }}
-    {% endfor %}
-</ul>
+    <table id="registros" class="table table-striped table-hover table-lg table-responsive">
+        <thead class="thead-default">
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for tx in txlist %}
+            {{ tx_detail(tx) }}
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
+
+<div id="tx_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="tx_modal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Tx data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row" style="margin-bottom: 0px">
+                    <div class="col-8">
+                        <label for="id_span" class="col-2 col-form-label">Id:
+                            <span  id="id_span" class="text-center" style="margin-left: 3px"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom: 0px">
+                    <div class="col-8">
+                        <label for="date_span" class="col-2 col-form-label">Date:
+                            <span id="date_span" class="text-center" style="margin-left: 3px"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom: 0px">
+                    <div class="col-8">
+                        <label for="type_span" class="col-2 col-form-label">Type:
+                            <span id="type_span" class="text-center" style="margin-left: 3px"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group row" style="margin-bottom: 0px">
+                    <div class="col-8">
+                        <label for="amount_span" class="col-2 col-form-label">Amount:
+                            <span id="amount_span" class="text-center" style="margin-left: 3px"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
