@@ -1,7 +1,6 @@
 package main
 
 import (
-	txs "./transactions"
 	"container/list"
 	. "encoding/json"
 	"errors"
@@ -14,9 +13,9 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	txs "transactions"
 )
 
-var Users map[int]txs.TransactionDTO
 var History = skiplist.New() // dict of ids -> txs
 var IdList = list.New()      // sequence of txs pointers, for easy iteration
 var Balance uint64 = 0       // current balance, could be calculated from txs, but for fast access
@@ -116,8 +115,6 @@ func Templating(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	Users = make(map[int]txs.TransactionDTO)
-	log.Println("Default users: ", Users)
 	router := mux.NewRouter()
 	router.HandleFunc("/transactions", Transact).Methods("POST")
 	router.HandleFunc("/transactions", GetTransactions).Methods("GET")
